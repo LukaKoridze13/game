@@ -1,17 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
 function App() {
+  const socket = useRef<DefaultEventsMap, DefaultEventsMap, null>(null);
   useEffect(() => {
-    const socket = io("http://localhost:3000", {
-      withCredentials: true,
-      extraHeaders: {
-        "Access-Control-Allow-Origin": "http://localhost:5173",
-      },
-    });
+    socket.current = io("http://localhost:3001");
 
     socket.on("connect", () => {
-      console.log("connected to server");
+      console.log("connected to server", socket.id);
     });
 
     socket.on("chat message", (msg) => {
@@ -22,11 +18,21 @@ function App() {
       console.log("disconnected from server");
     });
 
-    // send a message to the server
-    socket.emit("chat message", "Hello, server!");
+    // receive a message from the server
+    socket.on("chat message", (...args) => {
+      console.log(args);
+    });
   }, []);
 
-  return <>Div</>;
+  return (
+    <>
+      <button
+        onClick={() => {
+          // send a message to the server
+          socket.emit("chat message", "Hello, server!");
+        }}></button>
+    </>
+  );
 }
 
 export default App;
